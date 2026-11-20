@@ -1,6 +1,7 @@
 #include <iostream>
 #include "raylib.h"
 #include "drawtextbox.h"
+#include "player.h"
 #include <fstream>
 #include <string>
 using namespace std;
@@ -11,6 +12,7 @@ struct Wall {
     Rectangle bounds; //An object Wall consist of a Rectangle bounds.
 };
 
+Player player = { 0 };
 
 Wall walls[] = { //Arrays of walls, in format a wall object with Rectangle(x, y, width, height, bounds.)
     {{270, 0, 530, 80}}, //LATER SAVE THIS TO A FILE NAMED LEVELS
@@ -24,7 +26,7 @@ Rectangle gameArea = {270, 0, 530, 450}; //Game area is on right starting at x=2
 Rectangle textbox = { 0, 0, 270, 450 }; //Textbox is on left starting at x=0 y=0 to x=270 y=450, width 270, height 450. This is where the text will be drawn.
 Rectangle startScene = {0, 0, 800, 450}; //Start scene is the entire window, starting at x=0 y=0 to x=800 y=450, width 800, height 450. This is where the start screen will be drawn.
 string message; //Declares the variables to be used later
-Color textColor; 
+Color textColor;
 Font font;
 
 int scene = 0; //Scene variable, used to determine scene to draw
@@ -36,7 +38,7 @@ int scene = 0; //Scene variable, used to determine scene to draw
 
 
 Rectangle MessageCenterProcessor(Rectangle canva, string message, int font_size, int x_shift, int y_shift, int width_shift, int height_shift) { //Returns the center of a rectangle as a Vector2 object, which is used to position text in the center of a rectangle.]
-    float textWidth = MeasureTextEx(font, message.c_str(), font_size, 3).x + width_shift; 
+    float textWidth = MeasureTextEx(font, message.c_str(), font_size, 3).x + width_shift;
     float textHeight = MeasureTextEx(font, message.c_str(), font_size, 3).y + height_shift;
     float centerX = canva.x + (canva.width - textWidth) / 2 + x_shift; //Returns a Vector2 object with the x and y position of the center of the rectangle.
     float centerY = canva.y + (canva.height - textHeight) / 2 + y_shift;
@@ -96,6 +98,21 @@ void NextButton() {
         }
     }
 }
+void InitPlayer(){
+  player.rec.x =  300;
+  player.rec.y = 50;
+  player.rec.width = 20;
+  player.rec.height = 20;
+  // initializes the "rectangle" of player, including position
+  player.speed.x = 5;
+  player.speed.y = 5;
+  // Initializes player speed based on x and y coordinates using RayLib's Vector2
+  player.color = GREEN;
+  if (IsKeyDown(KEY_RIGHT)) player.rec.x += player.speed.x;
+  if (IsKeyDown(KEY_LEFT)) player.rec.x -= player.speed.x;
+  if (IsKeyDown(KEY_UP)) player.rec.y -= player.speed.y;
+  if (IsKeyDown(KEY_DOWN)) player.rec.y += player.speed.y;
+}
 void DrawScene() {
     BeginDrawing();
     ClearBackground(WHITE); //Clears the background to white for each frame
@@ -110,7 +127,7 @@ void DrawScene() {
         //Display Button
         string buttonMessage = "Start Game"; //Message to be displayed on the button
         Rectangle button = MessageCenterProcessor(startScene, buttonMessage, 20, 0, 30, 20, 0);
-        Rectangle buttonText = MessageCenterProcessor(startScene, buttonMessage, 20, 0, 30, 0, 0); 
+        Rectangle buttonText = MessageCenterProcessor(startScene, buttonMessage, 20, 0, 30, 0, 0);
         DrawRectangleRec(button, DARKGRAY); //Draws the button on the start screen
         DrawTextBoxed(font, buttonMessage, buttonText, 20, 3, true, textColor); //Draws the button text on the start screen
         Vector2 mousePosition = GetMousePosition(); //Gets the mouse position
@@ -119,7 +136,8 @@ void DrawScene() {
             DrawTextBoxed(font, buttonMessage, buttonText, 20, 3, true, textColor); //Draws the button text on the start screen
             if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) { //If the mouse is clicked, change the scene to 1
                 scene = 1;
-            } 
+                InitPlayer();
+            }
         }
 
 
@@ -187,8 +205,8 @@ int main() {
     InitWindow(800, 450, "Path-of-a-Packet"); //Initialize the application windows size and title
     SetTargetFPS(60);
     font = GetFontDefault();
-    // bool resizing = false; 
-    // bool wordWrap = true; 
+    // bool resizing = false;
+    // bool wordWrap = true;
     while (!WindowShouldClose()) { //Exit method, quits program on ESC or window close. This is also the start of program loop
         DrawScene(); //DrawScene is a function that draws the scene, it is called every frame.
     }
