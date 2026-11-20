@@ -34,29 +34,83 @@ int scene = 0; //Scene variable, used to determine scene to draw
 
 
 
-Rectangle MessageCenterProcessor(Rectangle canva, string message, int x_shift, int y_shift, int width_shift, int height_shift) { //Returns the center of a rectangle as a Vector2 object, which is used to position text in the center of a rectangle.
-    float textWidth = MeasureTextEx(font, message.c_str(), 20, 3).x + width_shift; 
-    float textHeight = MeasureTextEx(font, message.c_str(), 20, 3).y + height_shift;
+
+Rectangle MessageCenterProcessor(Rectangle canva, string message, int font_size, int x_shift, int y_shift, int width_shift, int height_shift) { //Returns the center of a rectangle as a Vector2 object, which is used to position text in the center of a rectangle.]
+    float textWidth = MeasureTextEx(font, message.c_str(), font_size, 3).x + width_shift; 
+    float textHeight = MeasureTextEx(font, message.c_str(), font_size, 3).y + height_shift;
     float centerX = canva.x + (canva.width - textWidth) / 2 + x_shift; //Returns a Vector2 object with the x and y position of the center of the rectangle.
     float centerY = canva.y + (canva.height - textHeight) / 2 + y_shift;
+
+    //Secure the shifting of text within drawing canvas.
+    if (centerX < canva.x) {
+        centerX = canva.x;
+    }
+    else if (centerX + textWidth > canva.x + canva.width) {
+        centerX = canva.x + canva.width - textWidth;
+    }
+
+    // Check vertical boundaries.
+    if (centerY < canva.y) {
+        centerY = canva.y;
+    }
+    else if (centerY + textHeight > canva.y + canva.height) {
+        centerY = canva.y + canva.height - textHeight;
+    }
     return Rectangle({centerX, centerY, textWidth, textHeight}); //Returns a Vector2 object with the x and y position of the center of the rectangle.
 }
 
+//Reads the levelx.txt from texts to diaplay reading on the left side.
+void ReadTextFile(string filename, Rectangle canva, Color textColor) { //Reads the message.txt file to display the message in the textbox
+    ifstream file(filename); //Opens the message.txt file to read the message to be displayed in the textbox
+        int lines;
+        string message; //String to hold the message to be displayed in the textbox
+        if (file.is_open()) { //It has to open, else repo is missing the file :(
+            file >> lines; //Reads the first line of the file, which is the number of lines in the file
+            file.ignore(); //Ignores the first line of the file, which is the number of lines in the file
+            getline(file, message); //Reads the second line of the file, which is the message to be displayed in the textbox
+            Rectangle messageBox = MessageCenterProcessor(canva, message, 20, 0, 0, 0, 400); //Calculates the center of the textbox rectangle to position the message in the center
+            DrawTextBoxed(font, message, messageBox, 20, 3, true, textColor); //Draws the message in the textbox
+            float height = MeasureTextEx(font, message.c_str(), 20, 3).y + 30; //Calculates the height of the message to be displayed in the textbox
+            for (int i = 1; i < lines; i++) { //Loops through the number of lines in the file
+                getline(file, message); //Reads the current line of the file
+                messageBox = {canva.x + 10, height, canva.width - 10, messageBox.height}; //Calculates the position of the message to be displayed in the textbox
+                DrawTextBoxed(font, message, messageBox, 20, 3, true, textColor); //Draws the message in the textbox
+                height += MeasureTextEx(font, message.c_str(), 20, 3).y; //Calculates the height of the message to be displayed in the textbox
+            }
+            file.close();
+        }
+    }
+
+void NextButton() {
+    string text = "Next"; //Message to be displayed on the button
+    Rectangle button = MessageCenterProcessor(textbox, text, 40, 0, 200, 0, 0); //Calculates the center of the textbox rectangle to position the button in the center
+    DrawRectangleRec(button, GREEN); //Draws the button on the screen
+    Rectangle buttonText = MessageCenterProcessor(textbox, text, 40, 10, 200, 0, 0); //Calculates the center of the textbox rectangle to position the button text in the center
+    DrawTextBoxed(font, text, buttonText, 30, 3, true, WHITE); //Draws the button text on the screen
+    Vector2 mousePosition = GetMousePosition(); //Gets the mouse position
+    if (CheckCollisionPointRec(mousePosition, button)) { //Checks if the mouse is over the button
+        DrawRectangleRec(button, DARKGREEN); //If the mouse is over the button, draw the button in a darker color
+        DrawTextBoxed(font, text, buttonText, 30, 3, true, WHITE); //Draws the button text on the screen
+        if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) { //If the mouse is clicked, change the scene to 2
+            scene ++; //Increment the scene variable to move to the next scene
+        }
+    }
+}
 void DrawScene() {
     BeginDrawing();
     ClearBackground(WHITE); //Clears the background to white for each frame
-    if (scene == 0) {
+    if (scene == 0) { //Startig screen has a different format
         //Display Text
         message = "Welcome to the Path of a Packet"; //Message to be displayed on the start screen
         textColor = WHITE; //Text color is WHITE
         DrawRectangleRec(startScene, BLACK); //Start screen background is BLACK
-        Rectangle messageBox = MessageCenterProcessor(startScene, message, 0, -50, 0, 0); //Calculates the center of the start screen rectangle to position the message in the center
+        Rectangle messageBox = MessageCenterProcessor(startScene, message, 20, 0, -50, 0, 0); //Calculates the center of the start screen rectangle to position the message in the center
         DrawTextBoxed(font, message, messageBox, 20, 3, true, textColor); //Draws the message on the start screen
 
         //Display Button
         string buttonMessage = "Start Game"; //Message to be displayed on the button
-        Rectangle button = MessageCenterProcessor(startScene, buttonMessage, 0, 30, 20, 0);
-        Rectangle buttonText = MessageCenterProcessor(startScene, buttonMessage, 0, 30, 0, 0); 
+        Rectangle button = MessageCenterProcessor(startScene, buttonMessage, 20, 0, 30, 20, 0);
+        Rectangle buttonText = MessageCenterProcessor(startScene, buttonMessage, 20, 0, 30, 0, 0); 
         DrawRectangleRec(button, DARKGRAY); //Draws the button on the start screen
         DrawTextBoxed(font, buttonMessage, buttonText, 20, 3, true, textColor); //Draws the button text on the start screen
         Vector2 mousePosition = GetMousePosition(); //Gets the mouse position
@@ -67,42 +121,65 @@ void DrawScene() {
                 scene = 1;
             } 
         }
+
+
     }
     else {
         DrawRectangleRec(textbox, WHITE); //Textbox on the left background WHITE
         textColor = BLACK; //Text color is BLACK
         DrawRectangleRec(gameArea, BLACK); // everything must be offset by game area
-        for (Wall wall : walls) {
-            DrawRectangleRec(wall.bounds, DARKGRAY);
-        }
-        BeginScissorMode( // scissor-mode cuts away elements from specific dimensions https://www.raylib.com/examples/core/loader.html?name=core_scissor_test
-            gameArea.x, //In short the goal is to prevent rendering outside of the game area
-            gameArea.y,
-            gameArea.width,
-            gameArea.height
-        );
-        EndScissorMode();
     }
 
     switch (scene) { //Switch statement to determine which scene to draw
+        case 0: {
+            break;
+        }
         case 1: {
-            ifstream file("./texts/readings.txt"); //Opens the message.txt file to read the message to be displayed in the textbox
-            string message; //String to hold the message to be displayed in the textbox
-            if (file.is_open()) {
-                getline(file, message);
-                file.close();
+            //Left side reading textbox
+            ReadTextFile("./texts/level1.txt", textbox, BLACK); //Reads the message.txt file to display the message in the textbox
+
+            //Right side game play area
+            ifstream file("./levels/level1.txt"); //Opens the level1.txt file to read the walls to be displayed in the game area
+            if (file.is_open()) { //It has to open, else repo is missing the file :(
+                int lines; //Declares the variables to be used later
+                file >> lines; //Reads the first line of the file, which is the number of walls in the file
+                file.ignore(); //Ignores the first line of the file,
+                string message;
+                getline(file, message); //Reads the second line of the file, which is the message to be displayed in the textbox
+                Rectangle messageBox = MessageCenterProcessor(gameArea, message, 20, 0, 0, 0, 0); //Calculates the center of the textbox rectangle to position the message in the center
+                DrawTextBoxed(font, message, messageBox, 20, 3, true, WHITE); //Draws the message in the textbox
+
+                //Next button
+                NextButton(); //Draws the next button on the screen
             }
-            cout << "Message: " << message << endl; //Prints the message to the console for debugging purposes
             break;
         }
 
         default: {
+            //Sample textbox reading
+            ReadTextFile("./texts/levelx.txt", textbox, BLACK); //Reads the message.txt file to display the message in the textbox
+            for (Wall wall : walls) {
+                DrawRectangleRec(wall.bounds, DARKGRAY);
+            }
+            BeginScissorMode( // scissor-mode cuts away elements from specific dimensions https://www.raylib.com/examples/core/loader.html?name=core_scissor_test
+                gameArea.x, //In short the goal is to prevent rendering outside of the game area
+                gameArea.y,
+                gameArea.width,
+                gameArea.height
+            );
+            EndScissorMode();
+
+            //Sample game area text
+            string gameText = "Level X";
+            Rectangle gameTextBox = MessageCenterProcessor(gameArea, gameText, 20, 0, -250, 0, 0); //Calculates the center of the textbox rectangle to position the message in the center
+            DrawTextBoxed(font, gameText, gameTextBox, 20, 3, true, WHITE); //Draws the message in the textbox
             break;
         }
     }
 
 
     EndDrawing();
+
 }
 
 int main() {
