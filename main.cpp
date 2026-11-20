@@ -100,12 +100,7 @@ void DrawScene() {
     BeginDrawing();
     ClearBackground(WHITE); //Clears the background to white for each frame
     if (scene == 0) { //Startig screen has a different format
-        //Display Text
-        message = "Welcome to the Path of a Packet"; //Message to be displayed on the start screen
-        textColor = WHITE; //Text color is WHITE
         DrawRectangleRec(startScene, BLACK); //Start screen background is BLACK
-        Rectangle messageBox = MessageCenterProcessor(startScene, message, 20, 0, -50, 0, 0); //Calculates the center of the start screen rectangle to position the message in the center
-        DrawTextBoxed(font, message, messageBox, 20, 3, true, textColor); //Draws the message on the start screen
 
         //Display Button
         string buttonMessage = "Start Game"; //Message to be displayed on the button
@@ -132,6 +127,11 @@ void DrawScene() {
 
     switch (scene) { //Switch statement to determine which scene to draw
         case 0: {
+            //Display text
+            message = "Welcome to the Path of a Packet"; //Message to be displayed on the start screen
+            textColor = WHITE; //Text color is WHITE
+            Rectangle messageBox = MessageCenterProcessor(startScene, message, 20, 0, -50, 0, 0); //Calculates the center of the start screen rectangle to position the message in the center
+            DrawTextBoxed(font, message, messageBox, 20, 3, true, textColor); //Draws the message on the start screen
             break;
         }
         case 1: {
