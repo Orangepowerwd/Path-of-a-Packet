@@ -2,26 +2,24 @@
 #include "raylib.h"
 #include "drawtextbox.h"
 #include "player.h"
+#include "wall.h"
 #include <fstream>
 #include <string>
+#include <vector>
 using namespace std;
 
 //global variables
 
-struct Wall {
-    Rectangle bounds; //An object Wall consist of a Rectangle bounds.
+Player player;
+
+vector<Wall> walls = { // vector of walls -- hardcoded but will be adapted to levels later
+    Wall(270, 0, 530, 80),
+    Wall(270, 370, 530, 80),
+    Wall(470, 80, 50, 100),
+    Wall(620, 270, 50, 100),
+    Wall(770, 80, 30, 130)
 };
 
-Player player = { 0 };
-
-Wall walls[] = { //Arrays of walls, in format a wall object with Rectangle(x, y, width, height, bounds.)
-    {{270, 0, 530, 80}}, //LATER SAVE THIS TO A FILE NAMED LEVELS
-    {{270, 370, 530, 80}},
-    {{470, 80, 50, 100}},
-    {{620, 270, 50, 100}},
-    {{770, 80, 30, 130}}
-};
-// ChatGPT advised use of drawing an array of bounds for the 'maze' portion
 Rectangle gameArea = {270, 0, 530, 450}; //Game area is on right starting at x=270 y=0 to x=800 y=450, width 530, height 450. This is where the maze will be drawn.
 Rectangle textbox = { 0, 0, 270, 450 }; //Textbox is on left starting at x=0 y=0 to x=270 y=450, width 270, height 450. This is where the text will be drawn.
 Rectangle startScene = {0, 0, 800, 450}; //Start scene is the entire window, starting at x=0 y=0 to x=800 y=450, width 800, height 450. This is where the start screen will be drawn.
@@ -30,12 +28,6 @@ Color textColor;
 Font font;
 
 int scene = 0; //Scene variable, used to determine scene to draw
-
-
-
-
-
-
 
 Rectangle MessageCenterProcessor(Rectangle canva, string message, int font_size, int x_shift, int y_shift, int width_shift, int height_shift) { //Returns the center of a rectangle as a Vector2 object, which is used to position text in the center of a rectangle.]
     float textWidth = MeasureTextEx(font, message.c_str(), font_size, 3).x + width_shift;
@@ -98,21 +90,6 @@ void NextButton() {
         }
     }
 }
-void InitPlayer(){
-  player.rec.x =  300;
-  player.rec.y = 50;
-  player.rec.width = 20;
-  player.rec.height = 20;
-  // initializes the "rectangle" of player, including position
-  player.speed.x = 5;
-  player.speed.y = 5;
-  // Initializes player speed based on x and y coordinates using RayLib's Vector2
-  player.color = GREEN;
-  if (IsKeyDown(KEY_RIGHT)) player.rec.x += player.speed.x;
-  if (IsKeyDown(KEY_LEFT)) player.rec.x -= player.speed.x;
-  if (IsKeyDown(KEY_UP)) player.rec.y -= player.speed.y;
-  if (IsKeyDown(KEY_DOWN)) player.rec.y += player.speed.y;
-}
 void DrawScene() {
     BeginDrawing();
     ClearBackground(WHITE); //Clears the background to white for each frame
@@ -131,7 +108,6 @@ void DrawScene() {
             DrawTextBoxed(font, buttonMessage, buttonText, 20, 3, true, textColor); //Draws the button text on the start screen
             if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) { //If the mouse is clicked, change the scene to 1
                 scene = 1;
-                InitPlayer();
             }
         }
 
@@ -166,26 +142,43 @@ void DrawScene() {
                 getline(file, message); //Reads the second line of the file, which is the message to be displayed in the textbox
                 Rectangle messageBox = MessageCenterProcessor(gameArea, message, 20, 0, 0, 0, 0); //Calculates the center of the textbox rectangle to position the message in the center
                 DrawTextBoxed(font, message, messageBox, 20, 3, true, WHITE); //Draws the message in the textbox
-
                 //Next button
                 NextButton(); //Draws the next button on the screen
             }
             break;
         }
+        case 99:{ // dedicated game over scene
+          message = "GAME OVER"; //Message to be displayed on the start screen
+          textColor = WHITE; //Text color is WHITE
+          Rectangle messageBox = MessageCenterProcessor(startScene, message, 20, 0, -50, 0, 0); //Calculates the center of the start screen rectangle to position the message in the center
+          DrawTextBoxed(font, message, messageBox, 20, 3, true, textColor); //Draws the message on the start screen
+          break;
+          }
 
         default: {
             //Sample textbox reading
             ReadTextFile("./texts/levelx.txt", textbox, BLACK); //Reads the message.txt file to display the message in the textbox
-            for (Wall wall : walls) {
-                DrawRectangleRec(wall.bounds, DARKGRAY);
-            }
             BeginScissorMode( // scissor-mode cuts away elements from specific dimensions https://www.raylib.com/examples/core/loader.html?name=core_scissor_test
                 gameArea.x, //In short the goal is to prevent rendering outside of the game area
                 gameArea.y,
                 gameArea.width,
                 gameArea.height
             );
+            for (int i = 0; i < walls.size(); i++) { // wall iteration for calling draw
+                walls[i].Draw();
+            }
+            player.Move(gameArea);
+            player.Draw();
             EndScissorMode();
+            for (int i =0 ;i < walls.size();i++) {
+                if (walls[i].CheckCollision(player.GetRec())) {
+                  scene = 99; //game over
+                break;
+              }
+            }
+            if (player.GetRec().x + player.GetRec().width >= gameArea.x + gameArea.width) { // if player's rectangle (entirely) touches the right wall of the screen, next level
+                scene++; // Will fix later
+            }
 
             //Sample game area text
             string gameText = "Level X";

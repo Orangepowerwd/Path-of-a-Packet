@@ -17,5 +17,7 @@ FetchContent_MakeAvailable(raylib)
 add_executable(main
     main.cpp
     drawtextbox.cpp
+    player.cpp
+    wall.cpp
 )
 target_link_libraries(main PRIVATE raylib)
