@@ -62,14 +62,14 @@ void ReadTextFile(string filename, Rectangle canva, Color textColor) { //Reads t
             file >> lines; //Reads the first line of the file, which is the number of lines in the file
             file.ignore(); //Ignores the first line of the file, which is the number of lines in the file
             getline(file, message); //Reads the second line of the file, which is the message to be displayed in the textbox
-            Rectangle messageBox = MessageCenterProcessor(canva, message, 20, 0, 0, 0, 400); //Calculates the center of the textbox rectangle to position the message in the center
-            DrawTextBoxed(font, message, messageBox, 20, 3, true, textColor); //Draws the message in the textbox
-            float height = MeasureTextEx(font, message.c_str(), 20, 3).y + 30; //Calculates the height of the message to be displayed in the textbox
+            Rectangle messageBox = MessageCenterProcessor(canva, message, 15, 0, 0, 0, 400); //Calculates the center of the textbox rectangle to position the message in the center
+            DrawTextBoxed(font, message, messageBox, 15, 3, true, textColor); //Draws the message in the textbox
+            float height = MeasureTextEx(font, message.c_str(), 15, 3).y + 30; //Calculates the height of the message to be displayed in the textbox
             for (int i = 1; i < lines; i++) { //Loops through the number of lines in the file
                 getline(file, message); //Reads the current line of the file
                 messageBox = {canva.x + 10, height, canva.width - 10, messageBox.height}; //Calculates the position of the message to be displayed in the textbox
-                DrawTextBoxed(font, message, messageBox, 20, 3, true, textColor); //Draws the message in the textbox
-                height += MeasureTextEx(font, message.c_str(), 20, 3).y; //Calculates the height of the message to be displayed in the textbox
+                DrawTextBoxed(font, message, messageBox, 12, 3, true, textColor); //Draws the message in the textbox
+                height += MeasureTextEx(font, message.c_str(), 12, 3).y; //Calculates the height of the message to be displayed in the textbox
             }
             file.close();
         }
@@ -87,6 +87,7 @@ void NextButton() {
         DrawTextBoxed(font, text, buttonText, 30, 3, true, WHITE); //Draws the button text on the screen
         if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) { //If the mouse is clicked, change the scene to 2
             scene ++; //Increment the scene variable to move to the next scene
+            cout << scene << endl; //Prints the current scene to the console for debugging purposes
         }
     }
 }
@@ -157,7 +158,8 @@ void DrawScene() {
 
         default: {
             //Sample textbox reading
-            ReadTextFile("./texts/levelx.txt", textbox, BLACK); //Reads the message.txt file to display the message in the textbox
+            string textlevel = "./texts/level" + to_string(scene) + ".txt"; //Reads the message.txt file to display the message in the textbox
+            ReadTextFile(textlevel, textbox, BLACK); //Reads the message.txt file to display the message in the textbox
             BeginScissorMode( // scissor-mode cuts away elements from specific dimensions https://www.raylib.com/examples/core/loader.html?name=core_scissor_test
                 gameArea.x, //In short the goal is to prevent rendering outside of the game area
                 gameArea.y,
@@ -184,6 +186,7 @@ void DrawScene() {
             string gameText = "Level X";
             Rectangle gameTextBox = MessageCenterProcessor(gameArea, gameText, 20, 0, -250, 0, 0); //Calculates the center of the textbox rectangle to position the message in the center
             DrawTextBoxed(font, gameText, gameTextBox, 20, 3, true, WHITE); //Draws the message in the textbox
+            NextButton(); //Draws the next button on the screen
             break;
         }
     }
