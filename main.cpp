@@ -193,12 +193,9 @@ void DrawScene() {
 
 
         default: {
-            //Sample textbox reading
-<<<<<<< HEAD
-=======
-            string textlevel = "./texts/level" + to_string(scene) + ".txt"; //Reads the message.txt file to display the message in the textbox
-            ReadTextFile(textlevel, textbox, BLACK); //Reads the message.txt file to display the message in the textbox
->>>>>>> 1152c2de4798f0d630937e423e56a271a8a49a10
+            /*
+            string textlevel = "./texts/level" + to_string(scene) + ".txt";
+            ReadTextFile(textlevel, textbox, BLACK);  */
             BeginScissorMode( // scissor-mode cuts away elements from specific dimensions https://www.raylib.com/examples/core/loader.html?name=core_scissor_test
                 gameArea.x, //In short the goal is to prevent rendering outside of the game area
                 gameArea.y,
@@ -226,7 +223,6 @@ void DrawScene() {
             string gameText = "Path of a Packet";
             Rectangle gameTextBox = MessageCenterProcessor(gameArea, gameText, 20, 0, -250, 0, 0); //Calculates the center of the textbox rectangle to position the message in the center
             DrawTextBoxed(font, gameText, gameTextBox, 20, 3, true, WHITE); //Draws the message in the textbox
-            NextButton(); //Draws the next button on the screen
             break;
         }
     }
