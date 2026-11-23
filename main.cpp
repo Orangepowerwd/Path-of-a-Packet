@@ -186,16 +186,15 @@ void DrawScene() {
           }
           break;
           }
-        case 2:{
-          LoadWalls("./levels/level1.txt");
-          ReadTextFile("./texts/level1.txt", textbox, BLACK);
-          }
 
 
         default: {
-            /*
-            string textlevel = "./texts/level" + to_string(scene) + ".txt";
-            ReadTextFile(textlevel, textbox, BLACK);  */
+          // default includes general gameplay that isn't the tutorial or game over screen
+          // Note here that "scene" is always one ahead because 0 occupies the beggining screen and 1 occupies the tutorial
+            string textlevel = "./texts/level" + to_string(scene - 1) + ".txt"; // takes scene to create text file
+            string wallFile = "./levels/level" + to_string(scene - 1) + ".txt"; // takes scene to create wall file
+            ReadTextFile(textlevel, textbox, BLACK);
+            LoadWalls(wallFile);
             BeginScissorMode( // scissor-mode cuts away elements from specific dimensions https://www.raylib.com/examples/core/loader.html?name=core_scissor_test
                 gameArea.x, //In short the goal is to prevent rendering outside of the game area
                 gameArea.y,
@@ -208,7 +207,7 @@ void DrawScene() {
             }
             player.Move(gameArea);
             player.Draw();
-            for (int i =0 ;i < walls.size();i++) {
+            for (int i = 0 ;i < walls.size();i++) {
                 if (walls[i].CheckCollision(player.GetRec())) {
                   scene = -1; //game over
                 break;
