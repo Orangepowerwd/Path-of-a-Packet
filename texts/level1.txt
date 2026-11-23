@@ -1,3 +1,9 @@
+<<<<<<< HEAD
 4
 Routing and Switching
 Your packet has reached a new network.
+=======
+2
+Tutorial
+In this place you will see a reading about how the packet travels through the internet.
+>>>>>>> 1152c2de4798f0d630937e423e56a271a8a49a10

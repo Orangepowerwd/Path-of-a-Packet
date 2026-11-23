@@ -1,0 +1,3 @@
+5 //Number of walls
+2 2 2 2
+2 2 2 2

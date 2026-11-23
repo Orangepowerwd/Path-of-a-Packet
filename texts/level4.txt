@@ -1,0 +1,3 @@
+2
+Network Layer Builds a Packet
+The Network layer adds an IP header to create an IP packet containing source and destination IP addresses. It uses routing information to determine the next hop: if the destination is on the same network, the packet is sent directly; otherwise, it is sent to the default gateway router. The destination IP identifies the final device, while routers make independent forwarding decisions at each hop.
