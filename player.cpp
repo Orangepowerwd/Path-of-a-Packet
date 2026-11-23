@@ -35,3 +35,7 @@ void Player::Move(Rectangle gameArea){
 void Player::Draw(){
   DrawRectangleRec(rec, color);
 }
+
+void Player::Reset(){
+  rec = { 300, 100, 20, 20 };
+}

@@ -12,13 +12,7 @@ using namespace std;
 
 Player player;
 
-vector<Wall> walls = { // vector of walls -- hardcoded but will be adapted to levels later
-    Wall(270, 0, 530, 80),
-    Wall(270, 370, 530, 80),
-    Wall(470, 80, 50, 100),
-    Wall(620, 270, 50, 100),
-    Wall(770, 80, 30, 130)
-};
+vector<Wall> walls; // vector of walls -- hardcoded but will be adapted to levels later
 
 Rectangle gameArea = {270, 0, 530, 450}; //Game area is on right starting at x=270 y=0 to x=800 y=450, width 530, height 450. This is where the maze will be drawn.
 Rectangle textbox = { 0, 0, 270, 450 }; //Textbox is on left starting at x=0 y=0 to x=270 y=450, width 270, height 450. This is where the text will be drawn.
@@ -75,6 +69,30 @@ void ReadTextFile(string filename, Rectangle canva, Color textColor) { //Reads t
         }
     }
 
+  //Reads the levelx.txt from texts to diaplay reading on the left side. Also procedurally generates the walls
+  void LoadWalls(string filename){
+    ifstream file(filename); //Opens the message.txt file to read the message to be displayed in the textbox
+        if (file.is_open()) { //It has to open, else repo is missing the file :(
+          int numWalls;
+            file >> numWalls;
+            vector<Wall> wallsToAdd;
+            for (int i = 0; i < numWalls; i++) {
+                float x;
+                float y;
+                float width;
+                float height; // all read walls
+                if (!(file >> x >> y >> width >> height)) {
+                    cout << "Error reading wall " << i << endl; // throws error if no wall
+                }
+
+                wallsToAdd.push_back(Wall(x, y, width, height)); // adds to wall
+            }
+            walls = wallsToAdd;
+
+            file.close();
+        }
+  }
+
 void NextButton() {
     string text = "Next"; //Message to be displayed on the button
     Rectangle button = MessageCenterProcessor(textbox, text, 40, 0, 200, 0, 0); //Calculates the center of the textbox rectangle to position the button in the center
@@ -128,12 +146,11 @@ void DrawScene() {
             DrawTextBoxed(font, message, messageBox, 20, 3, true, textColor); //Draws the message on the start screen
             break;
         }
-        case 1: {
+        case 1: { // TUTORIAL LEVEL
             //Left side reading textbox
-            ReadTextFile("./texts/level1.txt", textbox, BLACK); //Reads the message.txt file to display the message in the textbox
-
-            //Right side game play area
-            ifstream file("./levels/level1.txt"); //Opens the level1.txt file to read the walls to be displayed in the game area
+            ReadTextFile("./texts/tutorial.txt", textbox, BLACK); //Reads the message.txt file to display the message in the textbox
+            //Special command for the tutorial to have text where the gameplay should be
+            ifstream file("./levels/tutorial.txt"); //Opens the level1.txt file to read the walls to be displayed in the game area
             if (file.is_open()) { //It has to open, else repo is missing the file :(
                 int lines; //Declares the variables to be used later
                 file >> lines; //Reads the first line of the file, which is the number of walls in the file
@@ -142,46 +159,65 @@ void DrawScene() {
                 getline(file, message); //Reads the second line of the file, which is the message to be displayed in the textbox
                 Rectangle messageBox = MessageCenterProcessor(gameArea, message, 20, 0, 0, 0, 0); //Calculates the center of the textbox rectangle to position the message in the center
                 DrawTextBoxed(font, message, messageBox, 20, 3, true, WHITE); //Draws the message in the textbox
-                //Next button
-                NextButton(); //Draws the next button on the screen
             }
+            NextButton();//Next button
             break;
         }
-        case 99:{ // dedicated game over scene
+        case -1:{ // dedicated game over scene, needs to be before gameplay so that gameplay always runs default without crossing into game over
+          DrawRectangleRec(startScene, BLACK); // resets screen
           message = "GAME OVER"; //Message to be displayed on the start screen
           textColor = WHITE; //Text color is WHITE
           Rectangle messageBox = MessageCenterProcessor(startScene, message, 20, 0, -50, 0, 0); //Calculates the center of the start screen rectangle to position the message in the center
           DrawTextBoxed(font, message, messageBox, 20, 3, true, textColor); //Draws the message on the start screen
+          string buttonMessage = "RETRY?"; //Message to be displayed on the button
+          Rectangle button = MessageCenterProcessor(startScene, buttonMessage, 20, 0, 30, 20, 0);
+          Rectangle buttonText = MessageCenterProcessor(startScene, buttonMessage, 20, 0, 30, 0, 0);
+          DrawRectangleRec(button, DARKGRAY); //Draws the button on the start screen
+          DrawTextBoxed(font, buttonMessage, buttonText, 20, 3, true, textColor); //Draws the button text on the start screen
+          Vector2 mousePosition = GetMousePosition(); //Gets the mouse position
+          if (CheckCollisionPointRec(mousePosition, button)) { //Checks if the mouse is over the button
+              DrawRectangleRec(button, GRAY); //If the mouse is over the button, draw the button in a lighter color
+              DrawTextBoxed(font, buttonMessage, buttonText, 20, 3, true, textColor); //Draws the button text on the start screen
+              if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) { //If the mouse is clicked, change the scene to 1
+                  player.Reset();
+                  scene = 1;
+              }
+          }
           break;
           }
+        case 2:{
+          LoadWalls("./levels/level1.txt");
+          ReadTextFile("./texts/level1.txt", textbox, BLACK);
+          }
+
 
         default: {
             //Sample textbox reading
-            ReadTextFile("./texts/levelx.txt", textbox, BLACK); //Reads the message.txt file to display the message in the textbox
             BeginScissorMode( // scissor-mode cuts away elements from specific dimensions https://www.raylib.com/examples/core/loader.html?name=core_scissor_test
                 gameArea.x, //In short the goal is to prevent rendering outside of the game area
                 gameArea.y,
                 gameArea.width,
                 gameArea.height
             );
+            EndScissorMode();
             for (int i = 0; i < walls.size(); i++) { // wall iteration for calling draw
                 walls[i].Draw();
             }
             player.Move(gameArea);
             player.Draw();
-            EndScissorMode();
             for (int i =0 ;i < walls.size();i++) {
                 if (walls[i].CheckCollision(player.GetRec())) {
-                  scene = 99; //game over
+                  scene = -1; //game over
                 break;
               }
             }
             if (player.GetRec().x + player.GetRec().width >= gameArea.x + gameArea.width) { // if player's rectangle (entirely) touches the right wall of the screen, next level
-                scene++; // Will fix later
+              player.Reset();
+              scene++;
             }
 
             //Sample game area text
-            string gameText = "Level X";
+            string gameText = "Path of a Packet";
             Rectangle gameTextBox = MessageCenterProcessor(gameArea, gameText, 20, 0, -250, 0, 0); //Calculates the center of the textbox rectangle to position the message in the center
             DrawTextBoxed(font, gameText, gameTextBox, 20, 3, true, WHITE); //Draws the message in the textbox
             break;
