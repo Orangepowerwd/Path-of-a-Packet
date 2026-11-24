@@ -118,7 +118,7 @@ void NextButton() {
         DrawTextBoxed(font, text, buttonText, 30, 3, true, WHITE); //Draws the button text on the screen
         if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) { //If the mouse is clicked, change the scene to 2
             // scene++; //Increment the scene variable to move to the next scene
-            scene = 15; // for testing purposes, skip to the last level
+            scene = 16; // for testing purposes, skip to the last level
             cout << scene << endl; //Prints the current scene to the console for debugging purposes
         }
     }
@@ -182,14 +182,13 @@ void DrawScene() {
             //Victory screen, reached after level 15
             DrawRectangleRec(startScene, BLACK); // resets screen
             message = "CONGRATULATIONS! YOU HAVE COMPLETED THE GAME!"; //Message to be displayed on the start screen
-            textColor = GOLD; //Text color is WHITE
             Rectangle messageBox = MessageCenterProcessor(startScene, message, 20, 0, -50, 0, 0); //Calculates the center of the start screen rectangle to position the message in the center
-            DrawTextBoxed(font, message, messageBox, 20, 3, true, textColor); //Draws the message on the start screen
+            DrawTextBoxed(font, message, messageBox, 20, 3, true, GOLD); //Draws the message on the start screen
             string buttonMessage = "RETRY FROM BEGINNING?"; //Message to be displayed on the button
             Rectangle button = MessageCenterProcessor(startScene, buttonMessage, 20, 0, 30, 20, 0);
             Rectangle buttonText = MessageCenterProcessor(startScene, buttonMessage, 20, 0, 30, 0, 0);
             DrawRectangleRec(button, DARKGRAY); //Draws the button on the start screen
-            DrawTextBoxed(font, buttonMessage, buttonText, 20, 3, true, textColor); //Draws the button text on the start screen
+            DrawTextBoxed(font, buttonMessage, buttonText, 20, 3, true, WHITE); //Draws the button text on the start screen
             Vector2 mousePosition = GetMousePosition(); //Gets the mouse position
             if (CheckCollisionPointRec(mousePosition, button)) { //Checks if the mouse is over the button
                 DrawRectangleRec(button, GRAY); //If the mouse is over the button, draw the button in a lighter color
@@ -199,6 +198,7 @@ void DrawScene() {
                     player.Reset(300, 100); // resets player to spawn point if not tutorial
                 }
             }
+            break;
         }
         case -1: { // dedicated game over scene, needs to be before gameplay so that gameplay always runs default without crossing into game over
             DrawRectangleRec(startScene, BLACK); // resets screen
@@ -207,7 +207,7 @@ void DrawScene() {
             Rectangle messageBox = MessageCenterProcessor(startScene, message, 20, 0, -50, 0, 0); //Calculates the center of the start screen rectangle to position the message in the center
             DrawTextBoxed(font, message, messageBox, 20, 3, true, textColor); //Draws the message on the start screen
             if (checkpointReached) { // if the player has reached a checkpoint, give the option to retry from last checkpoint
-                string buttonMessage = "RETRY FROM LAST CHECKPOINT?"; //Message to be displayed on the button
+                string buttonMessage = "RETRY FROM LAST CHECKPOINT"; //Message to be displayed on the button
                 Rectangle button = MessageCenterProcessor(startScene, buttonMessage, 20, 0, -15, 20, 0);
                 Rectangle buttonText = MessageCenterProcessor(startScene, buttonMessage, 20, 0, -15, 0, 0);
                 DrawRectangleRec(button, DARKGRAY); //Draws the button on the start screen
@@ -218,7 +218,7 @@ void DrawScene() {
                     DrawTextBoxed(font, buttonMessage, buttonText, 20, 3, true, textColor); //Draws the button text on the start screen
                     if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) { //If the mouse is clicked, change the scene to 1
                         scene = save; // returns to the last saved scene
-                        if (scene > 1) {
+                        if (checkpointReached) { // if the player has reached a checkpoint, give the option to retry from last checkpoint
                             player.Reset(spawnPoint.bounds.x, spawnPoint.bounds.y); // resets player to spawn point if not tutorial
                         }
                         else {
