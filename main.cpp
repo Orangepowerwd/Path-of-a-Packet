@@ -275,7 +275,7 @@ void DrawScene() {
             CheckPointPoint.Draw(); // CheckPoint point is drawn, but will be invisible if disappear is true
             player.Move(gameArea);
             player.Draw();
-            NextButton(); // Test purpose
+            //NextButton(); // Test purpose
             EndScissorMode();
             for (int i = 0; i < walls.size(); i++) {
                 if (walls[i].CheckCollision(player.GetRec())) {
