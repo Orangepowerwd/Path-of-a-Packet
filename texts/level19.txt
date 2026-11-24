@@ -1,0 +1,3 @@
+2
+Application Receives Message
+The destination's Application layer receives and interprets the reconstructed data, such as an HTTP request, and generates a response. The response travels back through the layers in reverse. Each layer communicates with adjacent layers on the same device, while corresponding layers on different devices follow shared protocols.

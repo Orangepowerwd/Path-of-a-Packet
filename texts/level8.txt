@@ -1,3 +1,3 @@
 2
-Reaching the First Router
-A router reconstructs the incoming frame, removes its Data Link header and trailer, and examines the destination IP address. It consults its routing table to determine the next hop. Unlike switches, routers forward based on IP addresses, not MAC addresses, keeping the IP packet while rebuilding a new frame for the next link.
+New Link, New Frame
+The router creates a new frame for the next link, using its outgoing interface MAC as the source and the next hop's MAC as the destination. The frame format may change depending on the link technology, but the IP packet remains unchanged. The Physical layer converts the frame into signals and sends it to the next hop.

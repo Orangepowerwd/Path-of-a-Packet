@@ -1,3 +1,3 @@
 2
-Application Creates the Data
-The Application layer creates an HTTP request, while the Presentation and Session layers prepare and manage the data before passing it to the Transport layer. The upper layers focus on the meaning of the data, such as requesting a webpage, rather than how it travels across the network.
+Transport Builds a Segment
+The Transport layer adds a header to the application data, creating a TCP segment or UDP datagram. The header contains source and destination port numbers, along with sequence and acknowledgment numbers when using TCP. It provides end-to-end communication between devices and may split large data into smaller segments that travel independently through the network.

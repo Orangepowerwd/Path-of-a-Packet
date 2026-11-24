@@ -1,3 +1,3 @@
 2
-Inside the Local Network
-A switch converts incoming signals into bits, reconstructs the frame, and checks the destination MAC address to select an outgoing port. It forwards frames without normally inspecting higher-layer data. At each switch, the frame is recreated, while the IP packet and TCP/UDP segment remain unchanged until reaching the destination host or router.
+Reaching the First Router
+A router reconstructs the incoming frame, removes its Data Link header and trailer, and examines the destination IP address. It consults its routing table to determine the next hop. Unlike switches, routers forward based on IP addresses, not MAC addresses, keeping the IP packet while rebuilding a new frame for the next link.

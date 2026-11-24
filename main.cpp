@@ -10,6 +10,10 @@
 #include "spawn.cpp"
 using namespace std;
 
+//Some of the comments in this file are from auto-completion. 
+//Redding source: https://kahibaro.com/course/78-computer-networks/6527-packet-journey
+//Utilized ChatGPT to summarize text to fit in the textbox.
+
 //global variables
 
 Player player;
@@ -117,12 +121,13 @@ void NextButton() {
         DrawRectangleRec(button, DARKGREEN); //If the mouse is over the button, draw the button in a darker color
         DrawTextBoxed(font, text, buttonText, 30, 3, true, WHITE); //Draws the button text on the screen
         if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) { //If the mouse is clicked, change the scene to 2
-            // scene++; //Increment the scene variable to move to the next scene
-            scene = 16; // for testing purposes, skip to the last level
+            scene++; //Increment the scene variable to move to the next scene
+            //scene = 16; // for testing purposes, skip to the last level
             cout << scene << endl; //Prints the current scene to the console for debugging purposes
         }
     }
 }
+
 void DrawScene() {
     BeginDrawing();
     ClearBackground(WHITE); //Clears the background to white for each frame
@@ -178,7 +183,7 @@ void DrawScene() {
             NextButton();//Next button
             break;
         }
-        case 16: {
+        case 20: {
             //Victory screen, reached after level 15
             DrawRectangleRec(startScene, BLACK); // resets screen
             message = "CONGRATULATIONS! YOU HAVE COMPLETED THE GAME!"; //Message to be displayed on the start screen
@@ -270,6 +275,7 @@ void DrawScene() {
             spawnPoint.Draw(); // spawn point is drawn, but will be invisible if disappear is true
             player.Move(gameArea);
             player.Draw();
+            //NextButton(); // Test purpose
             EndScissorMode();
             for (int i = 0; i < walls.size(); i++) {
                 if (walls[i].CheckCollision(player.GetRec())) {

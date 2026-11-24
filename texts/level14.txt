@@ -1,0 +1,3 @@
+2
+Return Path May Differ
+The request and response do not necessarily follow the same network path. This is called asymmetric routing, where each network independently selects routes based on its routing tables, BGP policies, and business relationships. For example, a request may pass through a transit provider, while the response returns through a direct peering connection. Both paths can successfully deliver traffic.

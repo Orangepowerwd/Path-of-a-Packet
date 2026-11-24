@@ -1,0 +1,3 @@
+2
+Arrival at Destination Host
+The destination host converts incoming signals into bits and reconstructs the frame. It checks the frame's integrity and destination MAC address. If the address matches its interface or an accepted broadcast/multicast address, it accepts the frame, removes the Data Link header and trailer, and passes the remaining IP packet to the Network layer.

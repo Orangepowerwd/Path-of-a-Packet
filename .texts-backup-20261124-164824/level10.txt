@@ -1,0 +1,3 @@
+2
+Internet's Network Structure
+The Internet is a global collection of interconnected networks called Autonomous Systems (AS), each identified by an ASN and managed by different organizations. A packet may travel through a home network, ISP, ISP backbone, network interconnections (IXPs or private links), and the destination network before reaching the server. The exact route depends on network topology, routing policies, traffic conditions, and agreements between network operators.

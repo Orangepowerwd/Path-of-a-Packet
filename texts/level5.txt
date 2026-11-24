@@ -1,3 +1,3 @@
 2
-Data Link Builds a Frame
-The Data Link layer encapsulates the IP packet into a frame, adding source and destination MAC addresses and error-checking information. The destination MAC belongs to the next device on the local link, either the default gateway router or the destination host. If the MAC address is unknown, ARP is used to discover it. The data now has three layers of encapsulation: Transport, Network, and Data Link headers.
+Physical Layer Sends Bits
+The Physical layer converts the complete frame into a stream of bits (0s and 1s) and transmits them as electrical, optical, or radio signals, depending on the medium. It handles physical transmission rather than addresses or ports. The bits travel to the next network device, such as a switch, access point, or router, marking the end of the sending host's part of the journey.

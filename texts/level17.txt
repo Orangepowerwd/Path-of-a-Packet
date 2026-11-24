@@ -1,0 +1,3 @@
+2
+Network Layer Delivers Packet
+The destination host's Network layer checks whether the destination IP address matches its own. If it does, it removes the IP header and passes the remaining TCP segment or UDP datagram to the Transport layer, completing the packet's journey across the network.

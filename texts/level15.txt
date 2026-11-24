@@ -1,0 +1,3 @@
+2
+Final Router to Destination
+The final router recognizes that the destination IP belongs to a directly connected network. It resolves the destination host's MAC address if necessary, creates the final Data Link frame, and sends it through the Physical layer to deliver the packet to the destination host.
