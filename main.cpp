@@ -68,8 +68,8 @@ void ReadTextFile(string filename, Rectangle canva, Color textColor) { //Reads t
             for (int i = 1; i < lines; i++) { //Loops through the number of lines in the file
                 getline(file, message); //Reads the current line of the file
                 messageBox = {canva.x + 10, height, canva.width - 10, messageBox.height}; //Calculates the position of the message to be displayed in the textbox
-                DrawTextBoxed(font, message, messageBox, 12, 3, true, textColor); //Draws the message in the textbox
-                height += MeasureTextEx(font, message.c_str(), 12, 3).y; //Calculates the height of the message to be displayed in the textbox
+                DrawTextBoxed(font, message, messageBox, 15, 3, true, textColor); //Draws the message in the textbox
+                height += MeasureTextEx(font, message.c_str(), 15, 3).y; //Calculates the height of the message to be displayed in the textbox
             }
             file.close();
         }
