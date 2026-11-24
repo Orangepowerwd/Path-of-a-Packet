@@ -6,21 +6,22 @@
 #include <fstream>
 #include <string>
 #include <vector>
-#include "spawn.h"
-#include "spawn.cpp"
+#include "CheckPoint.h"
+#include "CheckPoint.cpp"
 using namespace std;
 
 //Some of the comments in this file are from auto-completion. 
 //Redding source: https://kahibaro.com/course/78-computer-networks/6527-packet-journey
 //Utilized ChatGPT to summarize text to fit in the textbox.
+//We used AI to randomize coordinates for the walls and check points.
 
 //global variables
 
 Player player;
 
 vector<Wall> walls; // vector of walls -- hardcoded but will be adapted to levels later
-bool disappear = false; // used for spawn points, if true then spawn point is invisible
-Spawn spawnPoint(300, 200, disappear); // spawn point is hardcoded for now, but will be adapted to levels later
+bool disappear = false; // used for CheckPoint points, if true then CheckPoint point is invisible
+CheckPoint CheckPointPoint(300, 200, disappear); // CheckPoint point is hardcoded for now, but will be adapted to levels later
 string loadedWallFile;
 Rectangle gameArea = {270, 0, 530, 450}; //Game area is on right starting at x=270 y=0 to x=800 y=450, width 530, height 450. This is where the maze will be drawn.
 Rectangle textbox = { 0, 0, 270, 450 }; //Textbox is on left starting at x=0 y=0 to x=270 y=450, width 270, height 450. This is where the text will be drawn.
@@ -29,8 +30,9 @@ string message; //Declares the variables to be used later
 Color textColor;
 Font font; //All these declaration could be moved to a class, but it is just less class calling so we left them in global
 int scene = 0; //Scene variable, used to determine scene to draw
-int save = 1; //The scene saved from spawn
+int save = 1; //The scene saved from CheckPoint
 bool checkpointReached = false; // used to determine if the player has reached a checkpoint, if so then the player can retry from the last checkpoint instead of the beginning
+bool thisReached = false;
 
 Rectangle MessageCenterProcessor(Rectangle canva, string message, int font_size, int x_shift, int y_shift, int width_shift, int height_shift) { //Returns the center of a rectangle as a Vector2 object, which is used to position text in the center of a rectangle.]
     float textWidth = MeasureTextEx(font, message.c_str(), font_size, 3).x + width_shift;
@@ -97,12 +99,12 @@ void LoadComponents(string filename) {
             wallsToAdd.push_back(Wall(x, y, width, height)); // adds to wall
         }
         walls = wallsToAdd;
-        float x_spawn;
-        float y_spawn;
-        if (!(file >> x_spawn >> y_spawn)) {
-            cout << "Error reading spawn point" << endl; // throws error if no spawn point
+        float x_CheckPoint;
+        float y_CheckPoint;
+        if (!(file >> x_CheckPoint >> y_CheckPoint)) {
+            cout << "Error reading CheckPoint point" << endl; // throws error if no CheckPoint point
         }
-        spawnPoint = Spawn(x_spawn, y_spawn, disappear);
+        CheckPointPoint = CheckPoint(x_CheckPoint, y_CheckPoint, disappear);
         loadedWallFile = filename;
         player.Reset(300, 100);
 
@@ -131,24 +133,8 @@ void NextButton() {
 void DrawScene() {
     BeginDrawing();
     ClearBackground(WHITE); //Clears the background to white for each frame
-    if (scene == 0) { //Startig screen has a different format
+    if (scene == 0 || scene == 20) { //Startig screen has a different format
         DrawRectangleRec(startScene, BLACK); //Start screen background is BLACK
-
-        //Display Button
-        string buttonMessage = "Start Game"; //Message to be displayed on the button
-        Rectangle button = MessageCenterProcessor(startScene, buttonMessage, 20, 0, 30, 20, 0);
-        Rectangle buttonText = MessageCenterProcessor(startScene, buttonMessage, 20, 0, 30, 0, 0);
-        DrawRectangleRec(button, DARKGRAY); //Draws the button on the start screen
-        DrawTextBoxed(font, buttonMessage, buttonText, 20, 3, true, textColor); //Draws the button text on the start screen
-        Vector2 mousePosition = GetMousePosition(); //Gets the mouse position
-        if (CheckCollisionPointRec(mousePosition, button)) { //Checks if the mouse is over the button
-            DrawRectangleRec(button, GRAY); //If the mouse is over the button, draw the button in a lighter color
-            DrawTextBoxed(font, buttonMessage, buttonText, 20, 3, true, textColor); //Draws the button text on the start screen
-            if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) { //If the mouse is clicked, change the scene to 1
-                scene = 1;
-            }
-        }
-
 
     }
     else {
@@ -164,6 +150,21 @@ void DrawScene() {
             textColor = WHITE; //Text color is WHITE
             Rectangle messageBox = MessageCenterProcessor(startScene, message, 20, 0, -50, 0, 0); //Calculates the center of the start screen rectangle to position the message in the center
             DrawTextBoxed(font, message, messageBox, 20, 3, true, textColor); //Draws the message on the start screen
+
+            //Display Button
+            string buttonMessage = "Start Game"; //Message to be displayed on the button
+            Rectangle button = MessageCenterProcessor(startScene, buttonMessage, 20, 0, 30, 20, 0);
+            Rectangle buttonText = MessageCenterProcessor(startScene, buttonMessage, 20, 0, 30, 0, 0);
+            DrawRectangleRec(button, DARKGRAY); //Draws the button on the start screen
+            DrawTextBoxed(font, buttonMessage, buttonText, 20, 3, true, textColor); //Draws the button text on the start screen
+            Vector2 mousePosition = GetMousePosition(); //Gets the mouse position
+            if (CheckCollisionPointRec(mousePosition, button)) { //Checks if the mouse is over the button
+                DrawRectangleRec(button, GRAY); //If the mouse is over the button, draw the button in a lighter color
+                DrawTextBoxed(font, buttonMessage, buttonText, 20, 3, true, textColor); //Draws the button text on the start screen
+                if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) { //If the mouse is clicked, change the scene to 1
+                    scene = 1;
+                }
+            }
             break;
         }
         case 1: { // TUTORIAL LEVEL
@@ -185,11 +186,10 @@ void DrawScene() {
         }
         case 20: {
             //Victory screen, reached after level 15
-            DrawRectangleRec(startScene, BLACK); // resets screen
             message = "CONGRATULATIONS! YOU HAVE COMPLETED THE GAME!"; //Message to be displayed on the start screen
             Rectangle messageBox = MessageCenterProcessor(startScene, message, 20, 0, -50, 0, 0); //Calculates the center of the start screen rectangle to position the message in the center
             DrawTextBoxed(font, message, messageBox, 20, 3, true, GOLD); //Draws the message on the start screen
-            string buttonMessage = "RETRY FROM BEGINNING?"; //Message to be displayed on the button
+            string buttonMessage = "RETRY FROM BEGINNING"; //Message to be displayed on the button
             Rectangle button = MessageCenterProcessor(startScene, buttonMessage, 20, 0, 30, 20, 0);
             Rectangle buttonText = MessageCenterProcessor(startScene, buttonMessage, 20, 0, 30, 0, 0);
             DrawRectangleRec(button, DARKGRAY); //Draws the button on the start screen
@@ -200,7 +200,7 @@ void DrawScene() {
                 DrawTextBoxed(font, buttonMessage, buttonText, 20, 3, true, textColor); //Draws the button text on the start screen
                 if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) { //If the mouse is clicked, change the scene to 1
                     scene = 1; // returns to the tutorial
-                    player.Reset(300, 100); // resets player to spawn point if not tutorial
+                    player.Reset(300, 100); // resets player to CheckPoint point if not tutorial
                 }
             }
             break;
@@ -224,7 +224,7 @@ void DrawScene() {
                     if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) { //If the mouse is clicked, change the scene to 1
                         scene = save; // returns to the last saved scene
                         if (checkpointReached) { // if the player has reached a checkpoint, give the option to retry from last checkpoint
-                            player.Reset(spawnPoint.bounds.x, spawnPoint.bounds.y); // resets player to spawn point if not tutorial
+                            player.Reset(CheckPointPoint.bounds.x, CheckPointPoint.bounds.y); // resets player to CheckPoint point if not tutorial
                         }
                         else {
                             player.Reset(300, 100);
@@ -244,7 +244,7 @@ void DrawScene() {
                 if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) { //If the mouse is clicked, change the scene to 1
                     scene = save; // returns to the last saved scene
                     if (scene > 1) {
-                        player.Reset(spawnPoint.bounds.x, spawnPoint.bounds.y); // resets player to spawn point if not tutorial
+                        player.Reset(CheckPointPoint.bounds.x, CheckPointPoint.bounds.y); // resets player to CheckPoint point if not tutorial
                     }
                     else {
                         player.Reset(300, 100);
@@ -272,10 +272,10 @@ void DrawScene() {
             for (int i = 0; i < walls.size(); i++) { // wall iteration for calling draw
                 walls[i].Draw();
             }
-            spawnPoint.Draw(); // spawn point is drawn, but will be invisible if disappear is true
+            CheckPointPoint.Draw(); // CheckPoint point is drawn, but will be invisible if disappear is true
             player.Move(gameArea);
             player.Draw();
-            //NextButton(); // Test purpose
+            NextButton(); // Test purpose
             EndScissorMode();
             for (int i = 0; i < walls.size(); i++) {
                 if (walls[i].CheckCollision(player.GetRec())) {
@@ -283,21 +283,35 @@ void DrawScene() {
                     break;
                 }
             }
-            if (spawnPoint.CheckCollision(player.GetRec())) { // if player collides with spawn point, next level
-                disappear = true; // spawn point disappears after collision
+            if (CheckPointPoint.CheckCollision(player.GetRec())) { // if player collides with CheckPoint point, next level
+                disappear = true; // CheckPoint point disappears after collision
                 checkpointReached = true; // player has reached a checkpoint
+                thisReached = true; // player has reached a checkpoint
                 save = scene; // saves the scene for next level
-                spawnPoint = Spawn(spawnPoint.bounds.x, spawnPoint.bounds.y, disappear); // spawn point is redrawn as invisible
+                CheckPointPoint = CheckPoint(CheckPointPoint.bounds.x, CheckPointPoint.bounds.y, disappear); // CheckPoint point is redrawn as invisible
             }
 
             if (player.GetRec().x + player.GetRec().width >= gameArea.x + gameArea.width) { // if player's rectangle (entirely) touches the right wall of the screen, next level
                 player.Reset(300, 100);
                 scene++;
-                disappear = false; // spawn point reappears for next level
+                thisReached = false; // reset checkpoint reached for next level
+                disappear = false; // CheckPoint point reappears for next level
+            }
+            if(player.GetRec().x <= gameArea.x) { // if player's rectangle (entirely) touches the left wall of the screen, next level
+                if(scene > 2) {
+                    player.Reset(750, 100);
+                }
+                else {
+                    player.Reset(300, 100);
+                }
+                scene--;
             }
 
-            //Sample game area text
-            string gameText = "Path of a Packet";
+            //Game area text
+            string gameText = "Level " + to_string(scene - 1); //Displays the current level number on the right side of the screen
+            if(thisReached) {
+                gameText += " - Checkpoint Reached"; //Displays the current level number on the right side of the screen
+            }
             Rectangle gameTextBox = MessageCenterProcessor(gameArea, gameText, 20, 0, -250, 0, 0); //Calculates the center of the textbox rectangle to position the message in the center
             DrawTextBoxed(font, gameText, gameTextBox, 20, 3, true, WHITE); //Draws the message in the textbox
             break;

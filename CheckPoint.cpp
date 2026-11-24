@@ -1,9 +1,9 @@
 #include "raylib.h"
-#include "spawn.h"
+#include "CheckPoint.h"
 
 
 
-Spawn::Spawn(float x, float y, bool disappear) {
+CheckPoint::CheckPoint(float x, float y, bool disappear) {
     bounds.x = x;
     bounds.y = y;
     if (disappear) {
@@ -16,11 +16,11 @@ Spawn::Spawn(float x, float y, bool disappear) {
     this->disappear = disappear;
 }
 
-bool Spawn::CheckCollision(Rectangle player) {
+bool CheckPoint::CheckCollision(Rectangle player) {
     return CheckCollisionRecs(bounds, player);
 }
 
-void Spawn::Draw() {
+void CheckPoint::Draw() {
     DrawRectangleRec(bounds, YELLOW);
 }
 
