@@ -20,6 +20,7 @@ public:
 
     void Draw(); // draw player
     void Reset();
+    void Reset(float x, float y);
 };
 // adapted from raylib asteroid game: https://github.com/raysan5/raylib-games/blob/master/classics/src/asteroids.c
 

@@ -39,3 +39,7 @@ void Player::Draw(){
 void Player::Reset(){
   rec = { 300, 100, 20, 20 };
 }
+
+void Player::Reset(float x, float y){
+  rec = { x, y, 20, 20 };
+}

@@ -6,6 +6,8 @@
 #include <fstream>
 #include <string>
 #include <vector>
+#include "spawn.h"
+#include "spawn.cpp"
 using namespace std;
 
 //global variables
@@ -13,15 +15,18 @@ using namespace std;
 Player player;
 
 vector<Wall> walls; // vector of walls -- hardcoded but will be adapted to levels later
-
+bool disappear = false; // used for spawn points, if true then spawn point is invisible
+Spawn spawnPoint(300, 200, disappear); // spawn point is hardcoded for now, but will be adapted to levels later
+string loadedWallFile;
 Rectangle gameArea = {270, 0, 530, 450}; //Game area is on right starting at x=270 y=0 to x=800 y=450, width 530, height 450. This is where the maze will be drawn.
 Rectangle textbox = { 0, 0, 270, 450 }; //Textbox is on left starting at x=0 y=0 to x=270 y=450, width 270, height 450. This is where the text will be drawn.
 Rectangle startScene = {0, 0, 800, 450}; //Start scene is the entire window, starting at x=0 y=0 to x=800 y=450, width 800, height 450. This is where the start screen will be drawn.
 string message; //Declares the variables to be used later
 Color textColor;
-Font font;
-
+Font font; //All these declaration could be moved to a class, but it is just less class calling so we left them in global
 int scene = 0; //Scene variable, used to determine scene to draw
+int save = 1; //The scene saved from spawn
+bool checkpointReached = false; // used to determine if the player has reached a checkpoint, if so then the player can retry from the last checkpoint instead of the beginning
 
 Rectangle MessageCenterProcessor(Rectangle canva, string message, int font_size, int x_shift, int y_shift, int width_shift, int height_shift) { //Returns the center of a rectangle as a Vector2 object, which is used to position text in the center of a rectangle.]
     float textWidth = MeasureTextEx(font, message.c_str(), font_size, 3).x + width_shift;
@@ -50,51 +55,59 @@ Rectangle MessageCenterProcessor(Rectangle canva, string message, int font_size,
 //Reads the levelx.txt from texts to diaplay reading on the left side.
 void ReadTextFile(string filename, Rectangle canva, Color textColor) { //Reads the message.txt file to display the message in the textbox
     ifstream file(filename); //Opens the message.txt file to read the message to be displayed in the textbox
-        int lines;
-        string message; //String to hold the message to be displayed in the textbox
-        if (file.is_open()) { //It has to open, else repo is missing the file :(
-            file >> lines; //Reads the first line of the file, which is the number of lines in the file
-            file.ignore(); //Ignores the first line of the file, which is the number of lines in the file
-            getline(file, message); //Reads the second line of the file, which is the message to be displayed in the textbox
-            Rectangle messageBox = MessageCenterProcessor(canva, message, 15, 0, 0, 0, 400); //Calculates the center of the textbox rectangle to position the message in the center
+    int lines;
+    string message; //String to hold the message to be displayed in the textbox
+    if (file.is_open()) { //It has to open, else repo is missing the file :(
+        file >> lines; //Reads the first line of the file, which is the number of lines in the file
+        file.ignore(); //Ignores the first line of the file, which is the number of lines in the file
+        getline(file, message); //Reads the second line of the file, which is the message to be displayed in the textbox
+        Rectangle messageBox = MessageCenterProcessor(canva, message, 15, 0, 0, 0, 400); //Calculates the center of the textbox rectangle to position the message in the center
+        DrawTextBoxed(font, message, messageBox, 15, 3, true, textColor); //Draws the message in the textbox
+        float height = MeasureTextEx(font, message.c_str(), 15, 3).y + 30; //Calculates the height of the message to be displayed in the textbox
+        for (int i = 1; i < lines; i++) { //Loops through the number of lines in the file
+            getline(file, message); //Reads the current line of the file
+            messageBox = {canva.x + 10, height, canva.width - 10, messageBox.height}; //Calculates the position of the message to be displayed in the textbox
             DrawTextBoxed(font, message, messageBox, 15, 3, true, textColor); //Draws the message in the textbox
-            float height = MeasureTextEx(font, message.c_str(), 15, 3).y + 30; //Calculates the height of the message to be displayed in the textbox
-            for (int i = 1; i < lines; i++) { //Loops through the number of lines in the file
-                getline(file, message); //Reads the current line of the file
-                messageBox = {canva.x + 10, height, canva.width - 10, messageBox.height}; //Calculates the position of the message to be displayed in the textbox
-                DrawTextBoxed(font, message, messageBox, 15, 3, true, textColor); //Draws the message in the textbox
-                height += MeasureTextEx(font, message.c_str(), 15, 3).y; //Calculates the height of the message to be displayed in the textbox
-            }
-            file.close();
+            height += MeasureTextEx(font, message.c_str(), 15, 3).y; //Calculates the height of the message to be displayed in the textbox
         }
+        file.close();
     }
+}
 
-  //Reads the levelx.txt from texts to diaplay reading on the left side. Also procedurally generates the walls
-  void LoadWalls(string filename){
+//Reads the levelx.txt from texts to diaplay reading on the left side. Also procedurally generates the walls
+void LoadComponents(string filename) {
     ifstream file(filename); //Opens the message.txt file to read the message to be displayed in the textbox
-        if (file.is_open()) { //It has to open, else repo is missing the file :(
-          int numWalls;
-            file >> numWalls;
-            vector<Wall> wallsToAdd;
-            for (int i = 0; i < numWalls; i++) {
-                float x;
-                float y;
-                float width;
-                float height; // all read walls
-                if (!(file >> x >> y >> width >> height)) {
-                    cout << "Error reading wall " << i << endl; // throws error if no wall
-                }
-
-                wallsToAdd.push_back(Wall(x, y, width, height)); // adds to wall
+    if (file.is_open()) { //It has to open, else repo is missing the file :(
+        int numWalls;
+        file >> numWalls;
+        vector<Wall> wallsToAdd;
+        for (int i = 0; i < numWalls; i++) {
+            float x;
+            float y;
+            float width;
+            float height; // all read walls
+            if (!(file >> x >> y >> width >> height)) {
+                cout << "Error reading wall " << i << endl; // throws error if no wall
             }
-            walls = wallsToAdd;
 
-            file.close();
+            wallsToAdd.push_back(Wall(x, y, width, height)); // adds to wall
         }
-  }
+        walls = wallsToAdd;
+        float x_spawn;
+        float y_spawn;
+        if (!(file >> x_spawn >> y_spawn)) {
+            cout << "Error reading spawn point" << endl; // throws error if no spawn point
+        }
+        spawnPoint = Spawn(x_spawn, y_spawn, disappear);
+        loadedWallFile = filename;
+        player.Reset(300, 100);
+
+        file.close();
+    }
+}
 
 void NextButton() {
-    string text = "Next"; //Message to be displayed on the button
+    string text = "Start"; //Message to be displayed on the button
     Rectangle button = MessageCenterProcessor(textbox, text, 40, 0, 200, 0, 0); //Calculates the center of the textbox rectangle to position the button in the center
     DrawRectangleRec(button, GREEN); //Draws the button on the screen
     Rectangle buttonText = MessageCenterProcessor(textbox, text, 40, 10, 200, 0, 0); //Calculates the center of the textbox rectangle to position the button text in the center
@@ -104,7 +117,8 @@ void NextButton() {
         DrawRectangleRec(button, DARKGREEN); //If the mouse is over the button, draw the button in a darker color
         DrawTextBoxed(font, text, buttonText, 30, 3, true, WHITE); //Draws the button text on the screen
         if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) { //If the mouse is clicked, change the scene to 2
-            scene ++; //Increment the scene variable to move to the next scene
+            // scene++; //Increment the scene variable to move to the next scene
+            scene = 15; // for testing purposes, skip to the last level
             cout << scene << endl; //Prints the current scene to the console for debugging purposes
         }
     }
@@ -164,58 +178,116 @@ void DrawScene() {
             NextButton();//Next button
             break;
         }
-        case -1:{ // dedicated game over scene, needs to be before gameplay so that gameplay always runs default without crossing into game over
-          DrawRectangleRec(startScene, BLACK); // resets screen
-          message = "GAME OVER"; //Message to be displayed on the start screen
-          textColor = WHITE; //Text color is WHITE
-          Rectangle messageBox = MessageCenterProcessor(startScene, message, 20, 0, -50, 0, 0); //Calculates the center of the start screen rectangle to position the message in the center
-          DrawTextBoxed(font, message, messageBox, 20, 3, true, textColor); //Draws the message on the start screen
-          string buttonMessage = "RETRY?"; //Message to be displayed on the button
-          Rectangle button = MessageCenterProcessor(startScene, buttonMessage, 20, 0, 30, 20, 0);
-          Rectangle buttonText = MessageCenterProcessor(startScene, buttonMessage, 20, 0, 30, 0, 0);
-          DrawRectangleRec(button, DARKGRAY); //Draws the button on the start screen
-          DrawTextBoxed(font, buttonMessage, buttonText, 20, 3, true, textColor); //Draws the button text on the start screen
-          Vector2 mousePosition = GetMousePosition(); //Gets the mouse position
-          if (CheckCollisionPointRec(mousePosition, button)) { //Checks if the mouse is over the button
-              DrawRectangleRec(button, GRAY); //If the mouse is over the button, draw the button in a lighter color
-              DrawTextBoxed(font, buttonMessage, buttonText, 20, 3, true, textColor); //Draws the button text on the start screen
-              if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) { //If the mouse is clicked, change the scene to 1
-                  player.Reset();
-                  scene = 1;
-              }
-          }
-          break;
-          }
-
+        case 16: {
+            //Victory screen, reached after level 15
+            DrawRectangleRec(startScene, BLACK); // resets screen
+            message = "CONGRATULATIONS! YOU HAVE COMPLETED THE GAME!"; //Message to be displayed on the start screen
+            textColor = GOLD; //Text color is WHITE
+            Rectangle messageBox = MessageCenterProcessor(startScene, message, 20, 0, -50, 0, 0); //Calculates the center of the start screen rectangle to position the message in the center
+            DrawTextBoxed(font, message, messageBox, 20, 3, true, textColor); //Draws the message on the start screen
+            string buttonMessage = "RETRY FROM BEGINNING?"; //Message to be displayed on the button
+            Rectangle button = MessageCenterProcessor(startScene, buttonMessage, 20, 0, 30, 20, 0);
+            Rectangle buttonText = MessageCenterProcessor(startScene, buttonMessage, 20, 0, 30, 0, 0);
+            DrawRectangleRec(button, DARKGRAY); //Draws the button on the start screen
+            DrawTextBoxed(font, buttonMessage, buttonText, 20, 3, true, textColor); //Draws the button text on the start screen
+            Vector2 mousePosition = GetMousePosition(); //Gets the mouse position
+            if (CheckCollisionPointRec(mousePosition, button)) { //Checks if the mouse is over the button
+                DrawRectangleRec(button, GRAY); //If the mouse is over the button, draw the button in a lighter color
+                DrawTextBoxed(font, buttonMessage, buttonText, 20, 3, true, textColor); //Draws the button text on the start screen
+                if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) { //If the mouse is clicked, change the scene to 1
+                    scene = 1; // returns to the tutorial
+                    player.Reset(300, 100); // resets player to spawn point if not tutorial
+                }
+            }
+        }
+        case -1: { // dedicated game over scene, needs to be before gameplay so that gameplay always runs default without crossing into game over
+            DrawRectangleRec(startScene, BLACK); // resets screen
+            message = "GAME OVER"; //Message to be displayed on the start screen
+            textColor = WHITE; //Text color is WHITE
+            Rectangle messageBox = MessageCenterProcessor(startScene, message, 20, 0, -50, 0, 0); //Calculates the center of the start screen rectangle to position the message in the center
+            DrawTextBoxed(font, message, messageBox, 20, 3, true, textColor); //Draws the message on the start screen
+            if (checkpointReached) { // if the player has reached a checkpoint, give the option to retry from last checkpoint
+                string buttonMessage = "RETRY FROM LAST CHECKPOINT?"; //Message to be displayed on the button
+                Rectangle button = MessageCenterProcessor(startScene, buttonMessage, 20, 0, -15, 20, 0);
+                Rectangle buttonText = MessageCenterProcessor(startScene, buttonMessage, 20, 0, -15, 0, 0);
+                DrawRectangleRec(button, DARKGRAY); //Draws the button on the start screen
+                DrawTextBoxed(font, buttonMessage, buttonText, 20, 3, true, textColor); //Draws the button text on the start screen
+                Vector2 mousePosition = GetMousePosition(); //Gets the mouse position
+                if (CheckCollisionPointRec(mousePosition, button)) { //Checks if the mouse is over the button
+                    DrawRectangleRec(button, GRAY); //If the mouse is over the button, draw the button in a lighter color
+                    DrawTextBoxed(font, buttonMessage, buttonText, 20, 3, true, textColor); //Draws the button text on the start screen
+                    if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) { //If the mouse is clicked, change the scene to 1
+                        scene = save; // returns to the last saved scene
+                        if (scene > 1) {
+                            player.Reset(spawnPoint.bounds.x, spawnPoint.bounds.y); // resets player to spawn point if not tutorial
+                        }
+                        else {
+                            player.Reset(300, 100);
+                        }
+                    }
+                }
+            }
+            string buttonMessage = "RETRY FROM BEGINNING?"; //Message to be displayed on the button
+            Rectangle button = MessageCenterProcessor(startScene, buttonMessage, 20, 0, 30, 20, 0);
+            Rectangle buttonText = MessageCenterProcessor(startScene, buttonMessage, 20, 0, 30, 0, 0);
+            DrawRectangleRec(button, DARKGRAY); //Draws the button on the start screen
+            DrawTextBoxed(font, buttonMessage, buttonText, 20, 3, true, textColor); //Draws the button text on the start screen
+            Vector2 mousePosition = GetMousePosition(); //Gets the mouse position
+            if (CheckCollisionPointRec(mousePosition, button)) { //Checks if the mouse is over the button
+                DrawRectangleRec(button, GRAY); //If the mouse is over the button, draw the button in a lighter color
+                DrawTextBoxed(font, buttonMessage, buttonText, 20, 3, true, textColor); //Draws the button text on the start screen
+                if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) { //If the mouse is clicked, change the scene to 1
+                    scene = save; // returns to the last saved scene
+                    if (scene > 1) {
+                        player.Reset(spawnPoint.bounds.x, spawnPoint.bounds.y); // resets player to spawn point if not tutorial
+                    }
+                    else {
+                        player.Reset(300, 100);
+                    }
+                }
+            }
+            break;
+        }
 
         default: {
-          // default includes general gameplay that isn't the tutorial or game over screen
-          // Note here that "scene" is always one ahead because 0 occupies the beggining screen and 1 occupies the tutorial
+            // default includes general gameplay that isn't the tutorial or game over screen
+            // Note here that "scene" is always one ahead because 0 occupies the beggining screen and 1 occupies the tutorial
             string textlevel = "./texts/level" + to_string(scene - 1) + ".txt"; // takes scene to create text file
             string wallFile = "./levels/level" + to_string(scene - 1) + ".txt"; // takes scene to create wall file
             ReadTextFile(textlevel, textbox, BLACK);
-            LoadWalls(wallFile);
+            if (wallFile != loadedWallFile) {
+                LoadComponents(wallFile);
+            }
             BeginScissorMode( // scissor-mode cuts away elements from specific dimensions https://www.raylib.com/examples/core/loader.html?name=core_scissor_test
                 gameArea.x, //In short the goal is to prevent rendering outside of the game area
                 gameArea.y,
                 gameArea.width,
                 gameArea.height
             );
-            EndScissorMode();
             for (int i = 0; i < walls.size(); i++) { // wall iteration for calling draw
                 walls[i].Draw();
             }
+            spawnPoint.Draw(); // spawn point is drawn, but will be invisible if disappear is true
             player.Move(gameArea);
             player.Draw();
-            for (int i = 0 ;i < walls.size();i++) {
+            EndScissorMode();
+            for (int i = 0; i < walls.size(); i++) {
                 if (walls[i].CheckCollision(player.GetRec())) {
-                  scene = -1; //game over
-                break;
-              }
+                    scene = -1; //game over
+                    break;
+                }
             }
+            if (spawnPoint.CheckCollision(player.GetRec())) { // if player collides with spawn point, next level
+                disappear = true; // spawn point disappears after collision
+                checkpointReached = true; // player has reached a checkpoint
+                save = scene; // saves the scene for next level
+                spawnPoint = Spawn(spawnPoint.bounds.x, spawnPoint.bounds.y, disappear); // spawn point is redrawn as invisible
+            }
+
             if (player.GetRec().x + player.GetRec().width >= gameArea.x + gameArea.width) { // if player's rectangle (entirely) touches the right wall of the screen, next level
-              player.Reset();
-              scene++;
+                player.Reset(300, 100);
+                scene++;
+                disappear = false; // spawn point reappears for next level
             }
 
             //Sample game area text
