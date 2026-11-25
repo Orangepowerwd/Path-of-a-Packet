@@ -1,3 +1,3 @@
 2
 How Packets Reach a CDN
-A Content Delivery Network (CDN) uses geographically distributed Points of Presence (PoPs) and edge servers to deliver content closer to users. DNS may direct a browser to an appropriate CDN edge location. If the requested content is cached (cache hit), the edge server delivers it directly; otherwise (cache miss), it retrieves the content from the origin server. CDNs reduce latency, distribute traffic, and reduce load on origin servers.
+A Content Delivery Network is a group fo servers that 'cache' (remember/save) data, so that a server does not constantly have to give out the same thing multiple times if multiple people want it. CDNs reduce latency, distribute traffic, and reduce load on origin servers.

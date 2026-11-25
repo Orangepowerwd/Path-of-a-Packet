@@ -1,0 +1,4 @@
+2
+Watch out!
+
+Despite data traveling through all of these hoops, any sort of vulnerabilities could have targeted your data and stolen them! Additionally, any data service could be using your data without your permission, behind Terms of Service. Some of this data that's passing through could be your usage, location, or even your biometrics.

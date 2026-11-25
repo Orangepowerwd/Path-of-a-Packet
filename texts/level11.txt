@@ -1,3 +1,4 @@
 2
 How Networks Exchange Packets
-Autonomous Systems exchange traffic through three main methods: Internet Exchange Points (IXPs), which provide shared switching infrastructure for direct traffic exchange; Private Network Interconnections (PNIs), which use dedicated connections between networks; and IP Transit, where one network pays another for access to the wider Internet. Participating routers use BGP to exchange routes and determine where traffic should go.
+
+Networks exchange packets at Exchange Points based on whether this is a private connection or if you are paying another network (like an internet service provider) for access to the internet.

@@ -3,7 +3,7 @@
 
 Player::Player(){
   rec = { 300, 100, 20, 20 };
-  speed = { 5, 5 };
+  speed = { 3.5, 3.5 };
   color = GREEN;
 }
 

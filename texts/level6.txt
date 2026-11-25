@@ -1,3 +1,3 @@
 2
 Inside the Local Network
-A switch converts incoming signals into bits, reconstructs the frame, and checks the destination MAC address to select an outgoing port. It forwards frames without normally inspecting higher-layer data. At each switch, the frame is recreated, while the IP packet and TCP/UDP segment remain unchanged until reaching the destination host or router.
+A switch converts incoming signals into bits, reconstructs the frame, and checks the destination MAC (identifying) address to select an outgoing port. Your data is recreated, but your destination is unchanged.

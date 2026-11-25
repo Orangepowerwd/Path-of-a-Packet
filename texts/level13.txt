@@ -1,3 +1,3 @@
 2
 Inside a Data Center
-If a request reaches the origin server, it passes through the data center's network infrastructure, which may include edge routers, internal routers, firewalls, and load balancers. A reverse proxy or web server receives the HTTP request and forwards it to the application server, which processes it and may retrieve data from a database. The response then travels back through the network toward the CDN or user's ISP.
+If a request reaches the 'origin', it passes through the data center's network infrastructure. Data is sent to the respective server, which processes it and may retrieve data from a database. The response then travels back through the network toward the CDN or user's ISP.

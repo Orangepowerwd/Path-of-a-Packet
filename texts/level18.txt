@@ -1,3 +1,4 @@
 2
-Transport Reassembles Data
-The Transport layer uses port numbers to identify the receiving application. TCP handles reliability by reordering segments, detecting missing data, and requesting retransmissions, while UDP uses a simpler process. It reassembles the data in the correct order when necessary and delivers it to the appropriate application.
+Reassembling Data
+
+Internet protocols are used here to reorder data, detect errors or missing data, and requesting retransmissions of data. These protocols know how to reassemble data in the correct order and deliver it properly.

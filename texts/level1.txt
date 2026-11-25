@@ -1,3 +1,3 @@
 2
-Application Creates the Data
-The Application layer creates an HTTP request, while the Presentation and Session layers prepare and manage the data before passing it to the Transport layer. The upper layers focus on the meaning of the data, such as requesting a webpage, rather than how it travels across the network.
+First, the Application Creates the Data
+If you're on a website, your application makes an HTTP request. It gathers the information from the website to prepare to send it a packet

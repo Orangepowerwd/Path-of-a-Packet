@@ -10,7 +10,7 @@
 #include "CheckPoint.cpp"
 using namespace std;
 
-//Some of the comments in this file are from auto-completion. 
+//Some of the comments in this file are from auto-completion.
 //Redding source: https://kahibaro.com/course/78-computer-networks/6527-packet-journey
 //Utilized ChatGPT to summarize text to fit in the textbox.
 //We used AI to randomize coordinates for the walls and check points.
@@ -133,7 +133,7 @@ void NextButton() {
 void DrawScene() {
     BeginDrawing();
     ClearBackground(WHITE); //Clears the background to white for each frame
-    if (scene == 0 || scene == 20) { //Startig screen has a different format
+    if (scene == 0 || scene == 21) { //Startig screen has a different format
         DrawRectangleRec(startScene, BLACK); //Start screen background is BLACK
 
     }
@@ -184,7 +184,7 @@ void DrawScene() {
             NextButton();//Next button
             break;
         }
-        case 20: {
+        case 21: {
             //Victory screen, reached after level 15
             message = "CONGRATULATIONS! YOU HAVE COMPLETED THE GAME!"; //Message to be displayed on the start screen
             Rectangle messageBox = MessageCenterProcessor(startScene, message, 20, 0, -50, 0, 0); //Calculates the center of the start screen rectangle to position the message in the center

@@ -1,3 +1,3 @@
 2
 How Routers Pick Next Hop
-Routers use routing tables to determine the next hop and outgoing interface. Within an Autonomous System, IGPs such as OSPF and IS-IS manage internal routing, while BGP exchanges network reachability information between different Autonomous Systems. BGP advertises and selects routes based on network policies, but actual packet forwarding is performed by routers using their forwarding tables.
+Routers use routing tables to determine the next hop and outgoing interface. It acts a phonebook for the nearest routers
