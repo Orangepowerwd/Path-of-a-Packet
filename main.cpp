@@ -130,6 +130,17 @@ void NextButton() {
     }
 }
 
+bool CheckWallCollision(int index){ // recursive function
+  if(index >= walls.size()){ // if there are no walls left but no collision is detected
+    return false;
+  }
+  if(walls[index].CheckCollision((player.GetRec()))){ // if collision is detected
+    return true;
+  }
+  return CheckWallCollision(index +1); // checks next wall
+}
+
+
 void DrawScene() {
     BeginDrawing();
     ClearBackground(WHITE); //Clears the background to white for each frame
@@ -277,11 +288,8 @@ void DrawScene() {
             player.Draw();
             //NextButton(); // Test purpose
             EndScissorMode();
-            for (int i = 0; i < walls.size(); i++) {
-                if (walls[i].CheckCollision(player.GetRec())) {
-                    scene = -1; //game over
-                    break;
-                }
+            if(CheckWallCollision(0)){ // checks every frame for every wall starting from the first for a collision
+              scene = -1; // activates game over condition
             }
             if (CheckPointPoint.CheckCollision(player.GetRec())) { // if player collides with CheckPoint point, next level
                 disappear = true; // CheckPoint point disappears after collision
